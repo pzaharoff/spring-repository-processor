@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0-rc-1'
+}
+
+group = 'ru.classbase'
+version = '1.0'
+
+java {
+    //sourceCompatibility = '17'
+    //targetCompatibility = '17'
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from(components.java)
+
+            pom {
+                packaging = 'jar'
+                name = 'Repository processor'
+                description = 'Java annotation processor for generating default Spring Data Repositories'
+                url = 'https://github.com/pzaharoff/spring-repositry-processor'
+
+                licenses {
+                    license {
+                        name = 'The 2-Clause BSD License'
+                        url = 'https://opensource.org/license/bsd-2-clause/'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "Diagnost"
+                        name = "Pavel Zakharov"
+                        email = "pzaharoff@gmail.com"
+                    }
+                }
+                scm {
+                    connection = "scm:https://github.com/pzaharoff/spring-repositry-processor.git"
+                    developerConnection = "scm:git@github.com:pzaharoff/spring-repositry-processor.git"
+                    url = "https://github.com/pzaharoff/spring-repositry-processor"
+                }
+            }
+        }
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
+            snapshotRepositoryUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            username = project.properties["sonatypeUsername"]
+            password = project.properties["sonatypePassword"]
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+dependencies {
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '3.1.4'
+    implementation group: 'com.google.auto.service', name: 'auto-service', version: '1.1.1'
+    implementation group: 'jakarta.persistence', name: 'jakarta.persistence-api', version: '3.1.0'
+    implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.32'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    testImplementation group: 'com.google.testing.compile', name: 'compile-testing', version: '0.21.0'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
